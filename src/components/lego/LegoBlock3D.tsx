@@ -19,6 +19,7 @@ interface LegoBlock3DProps {
   color: string;
   index: number;
   filled: boolean;
+  layerHeight?: number;
   style?: CSSProperties;
 }
 
@@ -34,6 +35,7 @@ function Slab({
   tx,
   tz,
   isSpire,
+  h = H,
 }: {
   w: number; // width in units
   d: number; // depth in units
@@ -42,10 +44,11 @@ function Slab({
   tx: number; // X offset in px
   tz: number; // Z offset in px
   isSpire?: boolean;
+  h?: number; // layer height override
 }) {
   const pw = w * U;
   const pd = d * U;
-  const ph = isSpire ? Math.round(H * 1.5) : H;
+  const ph = isSpire ? Math.round(h * 1.5) : h;
 
   if (!filled) {
     return (
@@ -223,8 +226,10 @@ export default function LegoBlock3D({
   color,
   index,
   filled,
+  layerHeight,
   style,
 }: LegoBlock3DProps) {
+  const effectiveH = layerHeight ?? H;
   const controls = useAnimation();
   const prevFilled = useRef(filled);
   const hasMounted = useRef(false);
@@ -269,9 +274,8 @@ export default function LegoBlock3D({
     <motion.div
       style={{
         ...style,
-        height: layer.isSpire ? Math.round(H * 1.5) : H,
+        height: layer.isSpire ? Math.round(effectiveH * 1.5) : effectiveH,
         width: maxWidth * U,
-        // CRITICAL: preserve-3d so the 3D faces inside are visible
         transformStyle: "preserve-3d",
       }}
       initial={filled ? { y: -40, scale: 0.3 } : { scale: 1 }}
@@ -287,6 +291,7 @@ export default function LegoBlock3D({
             filled={filled}
             tx={seg.offsetX * U}
             tz={seg.offsetZ * U}
+            h={effectiveH}
           />
         ))
       ) : (
@@ -298,6 +303,7 @@ export default function LegoBlock3D({
           tx={centerX}
           tz={centerZ}
           isSpire={layer.isSpire}
+          h={effectiveH}
         />
       )}
     </motion.div>

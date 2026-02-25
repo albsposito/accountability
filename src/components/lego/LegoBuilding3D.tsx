@@ -5,8 +5,9 @@ import { calculateBuildingProgress } from "@/lib/constants";
 import LegoBlock3D from "./LegoBlock3D";
 
 const U = 10; // must match LegoBlock3D
-const H = 9; // layer height, must match LegoBlock3D
-const GAP = 1;
+const DEFAULT_H = 9; // default layer height
+const DEFAULT_GAP = 1;
+const MAX_BUILDING_HEIGHT = 250; // max pixel height for the stack
 
 interface LegoBuilding3DProps {
   taskId: string;
@@ -37,8 +38,14 @@ export default function LegoBuilding3D({
   const maxDepth = Math.max(...blueprint.layers.map((l) => l.depth));
   const totalLayers = blueprint.layers.length;
 
+  // Scale layer height so tall buildings fit within MAX_BUILDING_HEIGHT
+  const defaultTotal = totalLayers * (DEFAULT_H + DEFAULT_GAP);
+  const scale = defaultTotal > MAX_BUILDING_HEIGHT ? MAX_BUILDING_HEIGHT / defaultTotal : 1;
+  const layerH = Math.max(3, Math.round(DEFAULT_H * scale));
+  const gap = Math.max(0, Math.round(DEFAULT_GAP * scale));
+
   // Total 2D height the stack occupies before 3D rotation
-  const stackHeight = totalLayers * (H + GAP);
+  const stackHeight = totalLayers * (layerH + gap);
 
   // The projected size after rotation — give enough room so nothing clips
   const sceneWidth = maxWidth * U + maxDepth * U * 0.7 + 30;
@@ -64,10 +71,7 @@ export default function LegoBuilding3D({
         }}
       >
         {blueprint.layers.map((layer, i) => {
-          // Position layers from bottom to top within the scene
-          // Use `top` offset from the top of the container instead of `bottom`
-          // so the stack grows upward from a stable base
-          const topOffset = (totalLayers - 1 - i) * (H + GAP);
+          const topOffset = (totalLayers - 1 - i) * (layerH + gap);
           return (
             <LegoBlock3D
               key={i}
@@ -77,6 +81,7 @@ export default function LegoBuilding3D({
               color={color}
               index={i}
               filled={i < filled}
+              layerHeight={layerH}
               style={{
                 position: "absolute",
                 top: topOffset,
