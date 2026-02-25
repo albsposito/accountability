@@ -13,7 +13,7 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task }: TaskCardProps) {
-  const { userName, updateTaskOptimistic } = useRoom();
+  const { userName, updateTaskOptimistic, removeTask } = useRoom();
   const [loading, setLoading] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const prevValueRef = useRef(task.current_value);
@@ -66,6 +66,7 @@ export default function TaskCard({ task }: TaskCardProps) {
 
   const handleDelete = async () => {
     if (!confirm("Delete this task?")) return;
+    removeTask(task.id);
     await fetch(`/api/tasks/${task.id}`, { method: "DELETE" });
   };
 

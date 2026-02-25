@@ -1,6 +1,6 @@
 "use client";
 
-import { getBuildingForTask } from "@/lib/buildings";
+import { getBuildingForTask, scaleBuildingForSteps } from "@/lib/buildings";
 import { calculateBuildingProgress } from "@/lib/constants";
 import LegoBlock3D from "./LegoBlock3D";
 
@@ -23,7 +23,9 @@ export default function LegoBuilding3D({
   currentValue,
   color,
 }: LegoBuilding3DProps) {
-  const blueprint = getBuildingForTask(taskId);
+  const baseBlueprint = getBuildingForTask(taskId);
+  const stepCount = endValue - startValue;
+  const blueprint = scaleBuildingForSteps(baseBlueprint, stepCount);
   const { filled } = calculateBuildingProgress(
     startValue,
     endValue,

@@ -165,3 +165,34 @@ export function getBuildingForTask(taskId: string): BuildingBlueprint {
   const index = hashString(taskId) % BUILDINGS.length;
   return BUILDINGS[index];
 }
+
+const STEPS_PER_LAYER = 5;
+const MIN_LAYERS = 10;
+const MAX_LAYERS = 60;
+
+/**
+ * Scale a building blueprint to a target number of layers based on step count.
+ * Each original layer is repeated proportionally to fill the target height.
+ */
+export function scaleBuildingForSteps(
+  blueprint: BuildingBlueprint,
+  stepCount: number
+): BuildingBlueprint {
+  const targetLayers = Math.max(
+    MIN_LAYERS,
+    Math.min(MAX_LAYERS, Math.ceil(stepCount / STEPS_PER_LAYER))
+  );
+
+  if (targetLayers <= blueprint.layers.length) return blueprint;
+
+  const originalLen = blueprint.layers.length;
+  const scaledLayers: BlueprintLayer[] = [];
+
+  for (let i = 0; i < targetLayers; i++) {
+    // Map each scaled index back to an original layer proportionally
+    const originalIndex = Math.floor((i / targetLayers) * originalLen);
+    scaledLayers.push(blueprint.layers[originalIndex]);
+  }
+
+  return { name: blueprint.name, layers: scaledLayers };
+}

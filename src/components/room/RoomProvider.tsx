@@ -19,6 +19,7 @@ interface RoomContextType {
   setUserName: (name: string) => void;
   refreshTasks: () => Promise<void>;
   updateTaskOptimistic: (taskId: string, updates: Partial<Task>) => void;
+  removeTask: (taskId: string) => void;
 }
 
 const RoomContext = createContext<RoomContextType | null>(null);
@@ -75,6 +76,10 @@ export default function RoomProvider({
     []
   );
 
+  const removeTask = useCallback((taskId: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+  }, []);
+
   // Realtime subscriptions
   useEffect(() => {
     const tasksChannel = supabase
@@ -122,6 +127,7 @@ export default function RoomProvider({
         setUserName,
         refreshTasks,
         updateTaskOptimistic,
+        removeTask,
       }}
     >
       {children}
